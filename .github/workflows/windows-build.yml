@@ -17,12 +17,17 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y mingw-w64 mingw-w64-tools libpcap-dev
+
+    - name: Patch source
+      run: |
+        sed -i '1i#ifdef _WIN32\n#define __errno_location() (_errno())\n#endif' src/pdesc.c
+        sed -i '1i#ifdef _WIN32\n#include <errno.h>\n#endif' src/pdesc.c
     
     - name: Configure and Build
       run: |
         ./autogen.sh
-        ./configure --host=x86_64-w64-mingw32 CFLAGS="-I/usr/x86_64-w64-mingw32/include" LDFLAGS="-L/usr/x86_64-w64-mingw32/lib"
-        make LDFLAGS="-lpthread -lws2_32"
+        ./configure --host=x86_64-w64-mingw32 CFLAGS="-I/usr/x86_64-w64-mingw32/include -fno-stack-protector" LDFLAGS="-L/usr/x86_64-w64-mingw32/lib"
+        make LDFLAGS="-lpthread -lws2_32 -L/usr/x86_64-w64-mingw32/lib" LIBS="-lpthread"
     
     - name: Upload artifact
       uses: actions/upload-artifact@v2
