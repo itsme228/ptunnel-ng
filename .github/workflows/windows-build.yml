@@ -13,16 +13,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
-    - name: Install MinGW
+    - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y mingw-w64
+        sudo apt-get install -y mingw-w64 mingw-w64-tools libpcap-dev
     
     - name: Configure and Build
       run: |
         ./autogen.sh
-        ./configure --host=x86_64-w64-mingw32
-        make
+        ./configure --host=x86_64-w64-mingw32 CFLAGS="-I/usr/x86_64-w64-mingw32/include" LDFLAGS="-L/usr/x86_64-w64-mingw32/lib"
+        make LDFLAGS="-lpthread -lws2_32"
     
     - name: Upload artifact
       uses: actions/upload-artifact@v2
